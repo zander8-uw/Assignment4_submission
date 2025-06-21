@@ -2,6 +2,7 @@
 
 #include <compare>
 #include <memory>
+#include "UserNotification.h"
 
 namespace HuntTheWumpus
 {

@@ -6,6 +6,7 @@
 #include "Context.h"
 #include "GameStateObservation.h"
 
+
 namespace HuntTheWumpus
 {
     Hunter::Hunter(Context& providers)
@@ -31,6 +32,15 @@ namespace HuntTheWumpus
     {
         if (trigger->Properties().m_fatalToHunter)
         {
+            if (trigger->GetIdentifier().m_category == Category::Arrow)
+            {
+                m_providers.m_notification.Notify(UserNotification::Notification::HunterShot);
+            }
+            else
+            {
+                m_providers.m_notification.Notify(UserNotification::Notification::HunterEaten);
+            }
+
             m_providers.m_change.GameOver(false);
             return true;
         }

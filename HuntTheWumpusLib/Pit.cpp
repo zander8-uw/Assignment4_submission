@@ -15,8 +15,9 @@ namespace HuntTheWumpus
 
     bool Pit::ObserveCaveEntrance(const std::shared_ptr<Denizen>& trigger)
     {
-        if (trigger->Properties().m_isEdible)
+        if (trigger->Properties().m_isEdible && m_providers.m_change.IsPlaying())
         {
+            m_providers.m_notification.Notify(HuntTheWumpus::UserNotification::Notification::PitTriggered);
             m_providers.m_change.GameOver(false);
 
             return true;

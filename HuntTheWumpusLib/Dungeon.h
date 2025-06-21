@@ -47,6 +47,9 @@ namespace HuntTheWumpus
         void MakeMove(DungeonMove operation, const std::vector<int> &destinationIds);
         static bool LegalMove(const std::shared_ptr<Denizen> &denizen, int destinationCave);
 
+        auto& GetCaveDenizens() { return m_caveDenizens; }
+        auto& GetCaves() { return m_caves; }
+
         Dungeon(const Dungeon &) = delete;
         Dungeon(Dungeon &&) = delete;
         Dungeon &operator=(const Dungeon &) = delete;

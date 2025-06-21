@@ -63,6 +63,8 @@ namespace TestHuntTheWumpus
 
         CHECK(cave->HasDenizens());
         CHECK(cave->HasDenizen({ HuntTheWumpus::Category::Hunter, 0 }));
+
+        CHECK(!env.m_testNotifications.reportIllegalMoveCheck);
     }
 
     TEST(DungeonSuite, Dungeon_ShootRequest_MissingTheWumpusReportsMiss)
@@ -96,6 +98,8 @@ namespace TestHuntTheWumpus
         const auto cave = dungeon.FindCave(newCaveId);
 
         CHECK(cave->HasDenizen({ HuntTheWumpus::Category::Wumpus , 0 }));
+
+        CHECK(env.m_testNotifications.observeMissCheck);
     }
 
     TEST(DungeonSuite, Dungeon_ShootingAll_GameOver)
@@ -122,20 +126,20 @@ namespace TestHuntTheWumpus
         dungeon.MakeMove(HuntTheWumpus::DungeonMove::Shoot, { 16 });
         CHECK(env.m_state.m_gameOverCalled);
         CHECK(!env.m_state.m_gameOverResult);
+
+        CHECK(env.m_testNotifications.observeOutOfArrowsCheck);
     }
 
     TEST(DungeonSuite, Dungeon_ShootRequest_HittingTheWumpusReportsGameOver)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;  // Make sure the game is playing.
 
         // This will ask for 6 random cave ids. Put the Wumpus
         // in Cave #15
         env.m_provider.SetCaveSequence({ 1, 2, 15, 4, 5, 6 });
 
         HuntTheWumpus::Dungeon dungeon(env.m_context);
-
-        // Make sure the game is playing.
-        env.m_state.m_isPlayingResult = true;
 
         // We know the Hunter is in cave 6, which connects to 15.
         // We've put the Wumpus in 15.
@@ -145,5 +149,8 @@ namespace TestHuntTheWumpus
         CHECK(!env.m_state.m_isPlayingResult);
         CHECK(env.m_state.m_gameOverCalled);
         CHECK(env.m_state.m_gameOverResult);
+
+        CHECK(env.m_testNotifications.wumpusShotCheck);
     }
+
 }

@@ -1,13 +1,17 @@
 
 #include "Context.h"
 #include "Dungeon.h"
+#include "Denizen.h"
+#include "Cave.h"
 #include "RandomProvider.h"
 #include "GameStateObservation.h"
 #include "UserNotification.h"
+#include <Hunter.h>
 
 #include <iostream>
 #include <random>
 #include <string>
+using namespace HuntTheWumpus;
 
 namespace
 {
@@ -46,12 +50,81 @@ namespace
         std::uniform_real_distribution<float> m_distributionRandom = std::uniform_real_distribution<float>(0.0f, 1.0f);
     };
 
-    HuntTheWumpus::UserNotification MakeUserNotifications()
+    void MakeUserNotifications(UserNotification& userNotification, Dungeon& dungeon)
     {
-        return {};
+        userNotification.AddCallback(UserNotification::Notification::ObserveWumpus, []() {
+            std::cout << "I smell a wumpus!\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::ObservePit, []() {
+            std::cout << "I feel a draft!\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::ObserveBat, []() {
+            std::cout << "Bats nearby!\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::ObserveMiss, [&]() {
+            auto hunter = std::dynamic_pointer_cast<Hunter>(dungeon.GetCaveDenizens().at({ Category::Hunter, 0 }));
+            std::cout << "The Arrow missed. You have " << hunter->ArrowCount() << " Arrows left.\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::ObserveOutOfArrows, []() {
+            std::cout << "You are out of arrows...\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::BatTriggered, []() {
+            std::cout << "Oh no! The Bat has picked you up and carried you to another cave!\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::PitTriggered, []() {
+            std::cout << "You feel your feet slip beneath you... you have fallen into a pit! You lose.\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::WumpusTriggered, []() {
+            std::cout << "You have accidently stumbled across the Wumpus!\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::WumpusAwoken, []() {
+            std::cout << "The Wumpus has been alerted, and it moves to a neighboring cave.\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::WumpusShot, []() {
+            std::cout << "Your Arrow hit the mark, the Wumpus has been shot!\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::HunterEaten, []() {
+            std::cout << "The mighty Wumpus has caught and consumed you!\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::HunterShot, []() {
+            std::cout << "Somehow you shot yourself with your own arrow...\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::CaveEntered, [&]() {
+            auto hunterCurrentCave = dungeon.GetCaveDenizens().at({ Category::Hunter, 0 })->GetCurrentCave().lock(); // find the Hunter's cave
+            std::cout << "You are in cave: ";
+            std::cout << hunterCurrentCave->GetCaveId() << "\n";    // print cave number of the current location of the Hunter
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::ReportIllegalMove, []() {
+            std::cout << "That move is not possible, please try again.\n";
+            });
+
+        userNotification.AddCallback(UserNotification::Notification::ReportNeighboringCaves, [&]() {
+            auto hunterCurrentCave = dungeon.GetCaveDenizens().at({ Category::Hunter, 0 })->GetCurrentCave().lock();  // find the Hunter's cave
+            auto connectedLocations = hunterCurrentCave->GetConnectedIds();                                           // get connected Ids
+
+            std::cout << "The caves connected to yours are: ";
+            for (auto cave : connectedLocations)    // print number of each connected cave
+            {
+                std::cout << cave << " ";
+            }
+            std::cout << "\n";
+            });
     }
 
-    class GameChange final : public HuntTheWumpus::IGameStateChange
+    class GameChange final : public IGameStateChange
     {
     public:
         GameChange() = default;
@@ -104,23 +177,67 @@ namespace
     }
 }
 
+bool CheckForNearbyHazard(HuntTheWumpus::Category category, HuntTheWumpus::Dungeon& dungeon)
+{
+    auto hunterCave = dungeon.GetCaveDenizens().at({ HuntTheWumpus::Category::Hunter, 0 })->GetCurrentCave().lock();
+    auto connectedCaves = hunterCave->GetConnectedIds();
+
+    for (auto caveId : connectedCaves)
+    {
+        auto& cave = dungeon.GetCaves().at(caveId);
+
+        if (cave->HasDenizen({ category, 0 }) || cave->HasDenizen({ category, 1 }))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void NotifyOfNearbyHazards(HuntTheWumpus::UserNotification& userNotification, HuntTheWumpus::Dungeon& dungeon)
+{
+
+    if (CheckForNearbyHazard(HuntTheWumpus::Category::Wumpus, dungeon))
+    {
+        userNotification.Notify(HuntTheWumpus::UserNotification::Notification::ObserveWumpus);
+    }
+
+    if (CheckForNearbyHazard(HuntTheWumpus::Category::Bat, dungeon))
+    {
+        userNotification.Notify(HuntTheWumpus::UserNotification::Notification::ObserveBat);
+    }
+
+    if (CheckForNearbyHazard(HuntTheWumpus::Category::Pit, dungeon))
+    {
+        userNotification.Notify(HuntTheWumpus::UserNotification::Notification::ObservePit);
+    }   
+}
+
 int main()
 {
     RandomCave sourceOfRandom;
     GameChange change;
 
-    auto observe = MakeUserNotifications();
+    auto observe = HuntTheWumpus::UserNotification();
 
     HuntTheWumpus::Context gameContext{ .m_notification = observe, .m_random = sourceOfRandom, .m_change = change };
 
     HuntTheWumpus::Dungeon dungeon(gameContext);
 
+    MakeUserNotifications(observe, dungeon);
+
+    NotifyOfNearbyHazards(observe, dungeon);
+
     while (change.IsPlaying())
     {
+        observe.Notify(HuntTheWumpus::UserNotification::Notification::CaveEntered);
+        observe.Notify(HuntTheWumpus::UserNotification::Notification::ReportNeighboringCaves);
+
         // Parse input.
         std::string input;
 
-        std::cout << "Command? ";
+        std::cout << "\nCommand? \n";   // the \n was unneeded, but it makes it a little easier to read.
         std::cout.flush();
 
         std::getline(std::cin, input);
@@ -132,6 +249,7 @@ int main()
 
         if (command[0] == 'm')
         {
+            std::cout << "\n";
             if (stringTokens.size() < 2)
             {
                 std::cout << "A Move command must be followed by the destination cave id.\n";
@@ -142,10 +260,16 @@ int main()
             const auto destCave = std::stoi(stringTokens[1]);
 
             dungeon.MakeMove(HuntTheWumpus::DungeonMove::Move, { destCave });
+
+            if (change.IsPlaying())
+            {
+                NotifyOfNearbyHazards(observe, dungeon);
+            }
         }
 
         if (command[0] == 's')
         {
+            std::cout << "\n";
             if (stringTokens.size() < 2)
             {
                 std::cout << "A Shoot command must be followed by a list of caves for the arrow to go through.\n";

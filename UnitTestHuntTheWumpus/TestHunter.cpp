@@ -71,6 +71,8 @@ namespace TestHuntTheWumpus
         // Show that a state-change happened to a "lost" result.
         CHECK(env.m_state.m_gameOverCalled);
         CHECK(!env.m_state.m_gameOverResult);
+
+        CHECK(env.m_testNotifications.hunterEatenCheck);
     }
 
     TEST(HunterSuite, Hunter_OnCaveEntrance_ShotByArrow)
@@ -87,5 +89,7 @@ namespace TestHuntTheWumpus
         // Show that a state-change happened to a "lost" result.
         CHECK(env.m_state.m_gameOverCalled);
         CHECK(!env.m_state.m_gameOverResult);
+
+        CHECK(env.m_testNotifications.hunterShotCheck);
     }
 }

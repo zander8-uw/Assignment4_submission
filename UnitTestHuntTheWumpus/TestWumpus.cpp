@@ -14,6 +14,7 @@ namespace TestHuntTheWumpus
     TEST(WumpusSuite, Wumpus_HasProperAttributes)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         const HuntTheWumpus::Wumpus wumpus(0, env.m_context);
 
@@ -35,6 +36,7 @@ namespace TestHuntTheWumpus
     TEST(WumpusSuite, Wumpus_CanBeShotByArrow)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         HuntTheWumpus::Wumpus wumpus(0, env.m_context);
 
@@ -46,11 +48,14 @@ namespace TestHuntTheWumpus
         // Show that a state-change happened to a "won" result.
         CHECK(env.m_state.m_gameOverCalled);
         CHECK(env.m_state.m_gameOverResult);
+
+        CHECK(env.m_testNotifications.wumpusShotCheck);
     }
 
     TEST(WumpusSuite, Wumpus_EatsHunter)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         HuntTheWumpus::Wumpus wumpus(0, env.m_context);
 
@@ -65,11 +70,15 @@ namespace TestHuntTheWumpus
         // Show that a state-change happened to a "lost" result.
         CHECK(env.m_state.m_gameOverCalled);
         CHECK(!env.m_state.m_gameOverResult);
+
+        CHECK(env.m_testNotifications.hunterEatenCheck);    // checks hunter is eaten callback occurs
+
     }
 
     TEST(WumpusSuite, Wumpus_FleesHunter)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         const auto wumpus = std::make_shared<HuntTheWumpus::Wumpus>(0, env.m_context);
 
@@ -90,11 +99,15 @@ namespace TestHuntTheWumpus
         CHECK(env.m_dungeon.m_moveDenizenRandomlyTriggered);
         CHECK_EQUAL(expectedMover, env.m_dungeon.m_thingToMove);
         CHECK(!env.m_state.m_gameOverCalled);
+
+        CHECK(env.m_testNotifications.wumpusAwokenCheck);
+
     }
 
     TEST(WumpusSuite, Wumpus_IgnoresBat)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         HuntTheWumpus::Wumpus wumpus(0, env.m_context);
 
@@ -102,5 +115,9 @@ namespace TestHuntTheWumpus
 
         // This should return false for no action taken.
         CHECK(!wumpus.ObserveCaveEntrance(bat));
+
+        CHECK(!env.m_testNotifications.wumpusAwokenCheck);
+        CHECK(!env.m_testNotifications.wumpusTriggeredCheck);
+
     }
 }

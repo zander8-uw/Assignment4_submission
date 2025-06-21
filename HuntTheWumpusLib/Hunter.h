@@ -21,7 +21,7 @@ namespace HuntTheWumpus
         bool ObserveCaveEntrance(const std::shared_ptr<Denizen>& trigger) override;
 
         std::shared_ptr<Arrow> GetArrow();
-
+        size_t ArrowCount() const { return m_arrows.size(); }
         [[nodiscard]] bool OutOfArrows() const { return m_arrows.empty(); }
 
         Hunter(const Hunter&) = delete;

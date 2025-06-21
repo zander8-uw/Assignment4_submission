@@ -13,6 +13,7 @@ namespace TestHuntTheWumpus
     TEST(BatSuite, Bat_HasProperAttributes)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         const HuntTheWumpus::Bat bat(0, env.m_context);
 
@@ -34,6 +35,7 @@ namespace TestHuntTheWumpus
     TEST(BatSuite, Bat_CarriesHunterToNewCave)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         HuntTheWumpus::Bat bat(0, env.m_context);
 
@@ -49,14 +51,19 @@ namespace TestHuntTheWumpus
         // Show that we get an action out of this.
         CHECK( bat.ObserveCaveEntrance(hunter));
 
-        // Show that we get the desired random cave.
+        //// Show that we get the desired random cave.
         CHECK_EQUAL( 57, env.m_dungeon.m_requestedDestination );
         CHECK_EQUAL( HuntTheWumpus::Category::Hunter, env.m_dungeon.m_thingToMove.m_category);
+
+        // Checks that the bat trigger callback occurs
+        CHECK(env.m_testNotifications.batTriggeredCheck);
+
     }
 
     TEST(BatSuite, Bat_IgnoresWumpus)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         HuntTheWumpus::Bat bat(0, env.m_context);
 

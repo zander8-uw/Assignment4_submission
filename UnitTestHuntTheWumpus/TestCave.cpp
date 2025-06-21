@@ -1,11 +1,16 @@
 #include "Cave.h"
 #include "Dungeon.h"
+#include "Wumpus.h"
+#include "Bat.h"
+#include "Pit.h"
+#include "Hunter.h"
 
 #include <TestHarness.h>
 
 #include "TestHelperTestEnvironment.h"
 
 #include <algorithm>
+#include <Wumpus.h>
 
 namespace TestHuntTheWumpus
 {
@@ -62,14 +67,21 @@ namespace TestHuntTheWumpus
     TEST(CaveSuite, CaveDenizen_AddWithObserve_CallsObserveOnDenizen)
     {
         TestEnvironment env;
-        HuntTheWumpus::Cave cave(57, env.m_dungeon);
+        const auto cave1 = std::make_shared<HuntTheWumpus::Cave>(57, env.m_dungeon);
+        const auto cave2 = std::make_shared<HuntTheWumpus::Cave>(58, env.m_dungeon);
+
+        cave1->ConnectTo(cave2);
+        cave2->ConnectTo(cave1);
+
 
         const auto testDenizen = std::make_shared<TestDenizen>(env.m_context);
 
-        cave.AddDenizen(testDenizen, true);
+        cave1->AddDenizen(testDenizen, true);
 
         CHECK(testDenizen->m_observeCalled);
         CHECK((testDenizen->GetIdentifier() <=> testDenizen->m_observedThing) == std::strong_ordering::equal);
+
+        const auto wumpus = std::make_shared<HuntTheWumpus::Wumpus>(0, env.m_context);
     }
 
     TEST(CaveSuite, CaveTunnels_AddTunnel_ReportsConnections)
@@ -138,4 +150,7 @@ namespace TestHuntTheWumpus
         CHECK(testDenizenB->m_observeCalled);
         CHECK(!testDenizenA->m_observeCalled);
     }
+
+    
+    
 }
