@@ -227,19 +227,12 @@ int main()
 
     MakeUserNotifications(observe, dungeon);
 
-    // Note: In order to report the connected caves and the hunter's cave, I made MakeUserNotifications() take in a Dungeon arguement.
-    // The issue is this creates a chicken and egg problem... 
-    // I need Dungeon to exist to register the callbacks properly, but I need the UserNotifications to exist in order to create the Context for Dungeon.
-    // My solution is further change MakeUserNotifications() to take in the 'observe' object as a reference.
-    // I couldn't think of a better way to get around this, hopefully this is acceptable. 
-    
-    
+    NotifyOfNearbyHazards(observe, dungeon);
+
     while (change.IsPlaying())
     {
         observe.Notify(HuntTheWumpus::UserNotification::Notification::CaveEntered);
         observe.Notify(HuntTheWumpus::UserNotification::Notification::ReportNeighboringCaves);
-
-        NotifyOfNearbyHazards(observe, dungeon);
 
         // Parse input.
         std::string input;
@@ -267,6 +260,11 @@ int main()
             const auto destCave = std::stoi(stringTokens[1]);
 
             dungeon.MakeMove(HuntTheWumpus::DungeonMove::Move, { destCave });
+
+            if (change.IsPlaying())
+            {
+                NotifyOfNearbyHazards(observe, dungeon);
+            }
         }
 
         if (command[0] == 's')

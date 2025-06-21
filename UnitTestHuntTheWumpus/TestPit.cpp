@@ -33,6 +33,7 @@ namespace TestHuntTheWumpus
     {
         TestEnvironment env;
         env.m_state.m_isPlayingResult = true;
+
         HuntTheWumpus::Pit pit(0, env.m_context);
 
         const auto hunter = std::make_shared<HuntTheWumpus::Hunter>(env.m_context);
@@ -43,5 +44,8 @@ namespace TestHuntTheWumpus
         // Show that a state-change happened to a "lost" result.
         CHECK(env.m_state.m_gameOverCalled);
         CHECK(!env.m_state.m_gameOverResult);
+
+        // This checks that the pit did trigger the callback
+        CHECK(env.m_testNotifications.pitTriggeredCheck);
     }
 }

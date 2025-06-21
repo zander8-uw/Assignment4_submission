@@ -54,6 +54,10 @@ namespace TestHuntTheWumpus
         //// Show that we get the desired random cave.
         CHECK_EQUAL( 57, env.m_dungeon.m_requestedDestination );
         CHECK_EQUAL( HuntTheWumpus::Category::Hunter, env.m_dungeon.m_thingToMove.m_category);
+
+        // Checks that the bat trigger callback occurs
+        CHECK(env.m_testNotifications.batTriggeredCheck);
+
     }
 
     TEST(BatSuite, Bat_IgnoresWumpus)
