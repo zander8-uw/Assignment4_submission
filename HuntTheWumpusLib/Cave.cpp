@@ -39,7 +39,7 @@ namespace HuntTheWumpus
                 if(denizen->ObserveCaveEntrance(newDenizen))
                 {
                     // Stop if that denizen affected things.
-                    break;
+                    return;
                 }
             }
         }

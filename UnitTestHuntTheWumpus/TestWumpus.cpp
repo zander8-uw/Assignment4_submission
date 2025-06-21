@@ -14,6 +14,7 @@ namespace TestHuntTheWumpus
     TEST(WumpusSuite, Wumpus_HasProperAttributes)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         const HuntTheWumpus::Wumpus wumpus(0, env.m_context);
 
@@ -35,6 +36,7 @@ namespace TestHuntTheWumpus
     TEST(WumpusSuite, Wumpus_CanBeShotByArrow)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         HuntTheWumpus::Wumpus wumpus(0, env.m_context);
 
@@ -51,6 +53,7 @@ namespace TestHuntTheWumpus
     TEST(WumpusSuite, Wumpus_EatsHunter)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         HuntTheWumpus::Wumpus wumpus(0, env.m_context);
 
@@ -70,6 +73,7 @@ namespace TestHuntTheWumpus
     TEST(WumpusSuite, Wumpus_FleesHunter)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         const auto wumpus = std::make_shared<HuntTheWumpus::Wumpus>(0, env.m_context);
 
@@ -95,6 +99,7 @@ namespace TestHuntTheWumpus
     TEST(WumpusSuite, Wumpus_IgnoresBat)
     {
         TestEnvironment env;
+        env.m_state.m_isPlayingResult = true;
 
         HuntTheWumpus::Wumpus wumpus(0, env.m_context);
 

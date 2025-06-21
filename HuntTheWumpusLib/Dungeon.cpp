@@ -11,6 +11,8 @@
 #include "Context.h"
 #include "RandomProvider.h"
 #include "GameStateObservation.h"
+#include "UserNotification.h"
+#include <iostream>
 
 // ReSharper disable once CppUnusedIncludeDirective
 #include <algorithm>
@@ -142,6 +144,8 @@ namespace HuntTheWumpus
 
         thing->EnterCave(destCave);
         destCave->AddDenizen(thing, true);
+       
+
     }
 
     bool Dungeon::LegalMove(const std::shared_ptr<Denizen>& denizen, const int destinationCave)
@@ -165,6 +169,10 @@ namespace HuntTheWumpus
             if (LegalMove(hunter, destinationIds.front()))
             {
                 Move(hunter->GetIdentifier(), destinationIds.front());
+            }
+            else 
+            {
+               m_providers.m_notification.Notify(UserNotification::Notification::ReportIllegalMove);
             }
         }
 
@@ -203,12 +211,15 @@ namespace HuntTheWumpus
 
             if (m_providers.m_change.IsPlaying())
             {
+                m_providers.m_notification.Notify(HuntTheWumpus::UserNotification::Notification::ObserveMiss);
+                m_providers.m_notification.Notify(HuntTheWumpus::UserNotification::Notification::WumpusAwoken);
                 MoveDenizenRandomly(m_caveDenizens.at({ Category::Wumpus, 0 }));
             }
 
             // The wumpus move could have ended the game, so check again.
             if (m_providers.m_change.IsPlaying() && hunter->OutOfArrows())
             {
+                m_providers.m_notification.Notify(HuntTheWumpus::UserNotification::Notification::ObserveOutOfArrows);
                 m_providers.m_change.GameOver(false);
             }
         }

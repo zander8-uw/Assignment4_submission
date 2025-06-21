@@ -32,7 +32,7 @@ namespace TestHuntTheWumpus
     TEST(PitSuite, Pit_BadForHunter)
     {
         TestEnvironment env;
-
+        env.m_state.m_isPlayingResult = true;
         HuntTheWumpus::Pit pit(0, env.m_context);
 
         const auto hunter = std::make_shared<HuntTheWumpus::Hunter>(env.m_context);
